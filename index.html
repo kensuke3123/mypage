@@ -3,129 +3,288 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>창문 너머</title>
+<title>신고쿄 엿보기</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap">
 <style>
+/* ===== 기본 ===== */
 :root{
   --night:#141a2e; --night2:#223052; --frame:#e9e6df; --lamp:#f3c77a;
-  --wall:#4a3326; --ink:#2b2118; --left:#6edafb; --right:#ff8937;
+  --wall:#4a3326; --ink:#2b2118; --left:#6edafb; --right:#ff8937; --cream:#fbefd2;
   box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
 *{box-sizing:border-box}
 body{margin:0;height:100%;background:radial-gradient(ellipse at 50% 0%,var(--night2),var(--night) 70%);
   font-family:"Gaegu","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px}
+  display:flex;align-items:center;justify-content:center;padding:16px}
+
+/* ===== 창문과 커튼 ===== */
 .window{position:relative;width:min(94vw,520px);height:min(70vh,520px);border:8px solid var(--frame);
-  background:linear-gradient(#5a4030,var(--wall));overflow:hidden;
-  box-shadow:0 0 60px 6px rgba(243,199,122,.18)}
+  background:linear-gradient(#5a4030,var(--wall));overflow:hidden;box-shadow:0 0 60px 6px rgba(243,199,122,.18)}
 .curtain{position:absolute;top:0;bottom:0;width:50%;z-index:2;
   background:repeating-linear-gradient(90deg,#6b3b3b 0 12px,#582e2e 12px 24px);
   transition:transform 2s cubic-bezier(.6,.05,.3,1)}
-.curtain.l{left:0}.curtain.r{right:0}
+.curtain.l{left:0}
+.curtain.r{right:0}
 .open .curtain.l{transform:translateX(-101%)}
 .open .curtain.r{transform:translateX(101%)}
-.title{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;
-  padding:24px;text-align:center;font-size:clamp(26px,6vw,34px);font-weight:700;line-height:1.5;
-  color:#fbefd2;text-shadow:0 2px 10px rgba(0,0,0,.6);opacity:0;transition:opacity 1s}
-.title.show{opacity:1}
-.bubble{position:absolute;top:50%;width:max-content;transform:translate(-50%,-50%);opacity:0;transition:opacity .7s}
+
+/* ===== 화면 위에 뜨는 층 (시작, 갤러리, 대화 제목, 끝 버튼) ===== */
+.ov{position:absolute;inset:0;z-index:3;opacity:0;visibility:hidden;color:var(--cream);text-align:center;
+  text-shadow:0 2px 10px rgba(0,0,0,.6);transition:opacity .7s,visibility 0s .7s}
+.ov.show{opacity:1;visibility:visible;transition:opacity .7s}
+
+.titles{position:absolute;left:0;right:0;top:20%;padding:0 12px}
+.titles h1{margin:0;font-size:clamp(40px,10vw,56px);line-height:1.2}
+.titles p{margin:8px 0 0;font-size:clamp(15px,3.9vw,22px)}
+.menu{position:absolute;left:0;right:0;top:54%;display:flex;flex-direction:column;align-items:center;gap:12px}
+
+.gal{position:absolute;left:0;right:0;top:12%;display:flex;flex-direction:column;align-items:center;gap:12px;padding:0 16px}
+.gal h2{margin:0 0 6px;font-size:clamp(32px,8vw,42px)}
+.gal .note{margin:0;font-size:18px;opacity:.85}
+
+.talkTitle{display:flex;align-items:center;justify-content:center;padding:0 16px;
+  font-size:clamp(40px,10vw,56px);font-weight:700;line-height:1.3}
+.end{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+
+/* ===== 버튼 ===== */
+.btn{font:inherit;font-size:22px;color:var(--lamp);background:rgba(0,0,0,.28);border:2px solid var(--lamp);
+  border-radius:24px;padding:8px 28px;min-width:190px;cursor:pointer;text-shadow:none}
+.btn.main{background:var(--lamp);color:var(--ink);font-weight:700}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.gal .btn{min-width:min(78%,280px)}
+
+.exit{position:absolute;top:10px;right:10px;z-index:1;width:44px;height:44px;padding:0;border-radius:50%;
+  display:grid;place-items:center;color:var(--cream);background:rgba(0,0,0,.4);border:2px solid var(--cream);
+  cursor:pointer;opacity:0;visibility:hidden;transition:opacity .5s,visibility 0s .5s}
+.exit.show{opacity:1;visibility:visible;transition:opacity 2s ease-in}
+.exit:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.exit svg{width:22px;height:22px}
+
+/* ===== 대화 장면 ===== */
+.label{position:absolute;top:14px;left:0;right:0;z-index:1;text-align:center;font-size:24px;font-weight:700;
+  color:var(--cream);text-shadow:0 2px 8px rgba(0,0,0,.6);opacity:0;transition:opacity .8s}
+.label.show{opacity:1}
+.bubble{position:absolute;top:50%;width:max-content;transform:translateX(-50%);opacity:0;transition:opacity .7s}
 .bubble.show{opacity:1}
-.bubble.a{left:41%;color:var(--left)}
-.bubble.b{left:59%;color:var(--right)}
+.bubble.a{left:50%;color:var(--left)}    /* 테두리 색 = color */
+.bubble.b{left:50%;color:var(--right)}
 #shape{position:absolute;overflow:visible;z-index:0}
 .txt{position:relative;z-index:1;color:var(--ink);text-align:center;
-  font-size:clamp(20px,4.6vw,25px);font-weight:700;line-height:1.4;word-break:keep-all}
-button{font:inherit;font-size:18px;background:none;color:var(--lamp);border:1px solid var(--lamp);
-  border-radius:20px;padding:6px 18px;cursor:pointer;visibility:hidden}
-button:focus-visible{outline:3px solid #fff;outline-offset:3px}
-@media (prefers-reduced-motion:reduce){.curtain,.title,.bubble{transition-duration:.01s}}
+  font-size:clamp(16px,3.6vw,21px);font-weight:700;line-height:1.4;word-break:keep-all}
+
+@media (prefers-reduced-motion:reduce){.curtain,.ov,.label,.bubble,.exit{transition-duration:.01s}}
 </style>
 </head>
 <body>
-<div class="window" id="win" role="img" aria-label="창문 너머로 보이는 두 사람의 대화">
-  <div class="bubble" id="bubble"><svg id="shape"></svg><div class="txt" id="txt"></div></div>
+<div class="window" id="win" role="region" aria-label="창문 너머로 보이는 두 사람의 대화">
+  <div class="label" id="label"></div>
+  <div class="bubble" id="bubble"><svg id="shape" aria-hidden="true"></svg><div class="txt" id="txt"></div></div>
   <div class="curtain l"></div><div class="curtain r"></div>
-  <div class="title" id="title"></div>
+
+  <div class="ov show" id="home">
+    <div class="titles"><h1>신고쿄 엿보기</h1><p>~동거하는 두 사람의 대화~</p></div>
+    <div class="menu">
+      <button class="btn main" id="startBtn">시작하기</button>
+      <button class="btn" id="galBtn">갤러리</button>
+    </div>
+  </div>
+  <div class="ov" id="gallery"><div class="gal" id="galList"></div></div>
+  <div class="ov talkTitle" id="talkTitle"></div>
+  <button class="exit" id="exit" aria-label="처음으로 돌아가기" title="처음으로 돌아가기">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+  </button>
+  <div class="ov end" id="end">
+    <button class="btn main" id="back">처음으로 돌아가기</button>
+    <button class="btn" id="more">더 엿보기</button>
+  </div>
 </div>
-<button id="again">다시 엿보기</button>
 
 <script>
-// ▼ 여기만 고치면 대화가 바뀝니다. who: "a"(왼쪽) 또는 "b"(오른쪽)
-const names = { a: "야부키 신고", b: "쿠사나기 쿄" };
-const script = [
-  { who: "a", text: "쿄 선배, 냉장고에 넣어둔 푸딩 못 봤어요?" },
-  { who: "b", text: "…못 봤는데." },
-  { who: "a", text: "입가에 카라멜 묻어 있는데요." },
-  { who: "b", text: "아침에 얼핏 본 것 같기도 하고." },
-  { who: "a", text: "그거 제가 아껴둔 거였어요!" },
-  { who: "b", text: "설거지는 내가 할게. 그걸로 됐지?" },
-  { who: "a", text: "그럼 빨래도 선배가…" },
-  { who: "b", text: "푸딩 하나에 요구가 너무 많은데." }
+/* ===== 1. 설정: 숫자만 바꿔서 모양을 조절할 수 있어요 ===== */
+const SETTINGS = {
+  bubbleSize: 0.29,   // 말풍선 글자 영역 너비 (창문 너비 대비). 크게 하려면 0.33
+  roundness: 0.88,    // 1에 가까울수록 원, 작을수록 납작한 타원
+  bubbleTop: -100,     // 말풍선 맨 위의 위치 (창문 중앙선 기준 px, 음수 = 위쪽)
+  tailWidth: 16,      // 꼬리 밑동 폭
+  tailLength: 24      // 꼬리 길이
+};
+
+/* ===== 2. 대화 목록: title = 대화 이름, who "a" = 왼쪽(신고), "b" = 오른쪽(쿄) ===== */
+const talks = [
+  { title: "대화 A", lines: [
+    { who: "a", text: "쿄 선배, 냉장고에 넣어둔 푸딩 못 봤어요?" },
+    { who: "b", text: "…못 봤는데." },
+    { who: "a", text: "입가에 카라멜 묻어 있는데요." },
+    { who: "b", text: "아침에 얼핏 본 것 같기도 하고." },
+    { who: "a", text: "그거 제가 아껴둔 거였어요!" },
+    { who: "b", text: "설거지는 내가 할게. 그걸로 됐지?" },
+    { who: "a", text: "그럼 빨래도 선배가…" },
+    { who: "b", text: "푸딩 하나에 요구가 너무 많은데." }
+  ]},
+  { title: "대화 B", lines: [
+    { who: "a", text: "쿄 선배, 밖에 비 와요! 빨래 걷어야 하는데." },
+    { who: "b", text: "이미 다 젖었겠지." },
+    { who: "a", text: "그러니까 빨리 가야죠!" },
+    { who: "b", text: "…우산 하나로 같이 가자." },
+    { who: "a", text: "선배 어깨가 젖을 텐데요." },
+    { who: "b", text: "네 어깨가 더 좁잖아." },
+    { who: "a", text: "그거 칭찬이에요, 놀리는 거예요?" },
+    { who: "b", text: "우산이나 들어." }
+  ]},
+  { title: "대화 C", lines: [
+    { who: "a", text: "쿄 선배, 아직 안 자요?" },
+    { who: "b", text: "네가 불 켜놓고 있으니까 못 자겠다." },
+    { who: "a", text: "그럼 같이 라면 먹어요! 제가 끓일게요." },
+    { who: "b", text: "한밤중에 그걸 먹자고?" },
+    { who: "a", text: "선배도 눈이 반짝이는데요." },
+    { who: "b", text: "…계란은 내가 넣을게." },
+    { who: "a", text: "파도 넣어요!" },
+    { who: "b", text: "그건 네가 썰어." }
+  ]}
 ];
 
-const win = document.getElementById("win");
-const title = document.getElementById("title");
-const bubble = document.getElementById("bubble");
-const txt = document.getElementById("txt");
-const shape = document.getElementById("shape");
+/* ===== 3. 준비 ===== */
+const $ = id => document.getElementById(id);
+const win = $("win"), home = $("home"), gallery = $("gallery"), talkTitle = $("talkTitle"), end = $("end");
+const label = $("label"), bubble = $("bubble"), txt = $("txt"), shape = $("shape");
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const randomTalk = except => {                       // 같은 대화가 연달아 나오지 않게 고를 수도 있음
+  let i = Math.floor(Math.random() * talks.length);
+  if (except !== undefined && talks.length > 1 && i === except) i = (i + 1) % talks.length;
+  return i;
+};
 
-// 꼬리가 달린 말풍선 모양을 먼저 하나로 그리고, 그 바깥에 테두리를 입힙니다
+// 이미 본 대화 기록 (브라우저에 저장, 저장이 막혀 있어도 동작)
+let seen = [];
+try { seen = JSON.parse(localStorage.getItem("seenTalks") || "[]"); } catch (e) {}
+const markSeen = i => {
+  if (!seen.includes(i)) seen.push(i);
+  try { localStorage.setItem("seenTalks", JSON.stringify(seen)); } catch (e) {}
+};
+
+/* ===== 4. 말풍선: 꼬리가 달린 모양을 먼저 하나로 그리고, 그 바깥에 테두리를 입힘 ===== */
 function drawBubble(who){
-  bubble.style.maxWidth = (win.clientWidth * 0.5) + "px";
+  bubble.style.maxWidth = Math.max(win.clientWidth * SETTINGS.bubbleSize, 100) + "px";
   const w = txt.offsetWidth, h = txt.offsetHeight;
-  const rx = w / 2 * 1.42 + 16, ry = h / 2 * 1.42 + 14;
-  const SW = Math.ceil(2 * rx + 20), SH = Math.ceil(2 * ry + 56);
+  const rx = w / 2 * 1.42 + 16;
+  const ry = Math.max(h / 2 * 1.42 + 14, rx * SETTINGS.roundness);
+  const SW = Math.ceil(2 * rx + 20), SH = Math.ceil(2 * ry + SETTINGS.tailLength + 30);
   const cx = SW / 2, cy = ry + 10;
-  const pt = (deg, k) => [cx + rx * k * Math.cos(deg * Math.PI / 180), cy + ry * k * Math.sin(deg * Math.PI / 180)];
-  const s = who === "a" ? -1 : 1;
+  const s = who === "a" ? -1 : 1;                    // 왼쪽 = -1, 오른쪽 = 1
   const yOn = x => cy + ry * Math.sqrt(Math.max(0, 1 - Math.pow((x - cx) / rx, 2)));
-  const x1 = cx + s * rx * 0.42, x2 = x1 + s * 20;   // 꼬리 밑동 폭 약 20px (가늘게)
+  const x1 = cx + s * rx * 0.42, x2 = x1 + s * SETTINGS.tailWidth;
   const b1 = [x1, yOn(x1) - 3], b2 = [x2, yOn(x2) - 3];
-  const tip = [cx + s * rx * 0.62, cy + ry + 28];
+  const tip = [cx + s * rx * 0.62, cy + ry + SETTINGS.tailLength];
+  const parts = `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/>`
+    + `<path d="M${b1} Q${x1 + s * 6},${cy + ry + 6} ${tip} Q${x2},${cy + ry} ${b2} Z"/>`;
+
   shape.setAttribute("width", SW); shape.setAttribute("height", SH);
   shape.style.left = (w / 2 - SW / 2) + "px";
   shape.style.top = (h / 2 - cy) + "px";
-  const parts = `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/><path d="M${b1} Q${x1 + s * 6},${cy + ry + 6} ${tip} Q${x2},${cy + ry} ${b2} Z"/>`;
-  shape.innerHTML = `<g fill="currentColor" stroke="currentColor" stroke-width="10" stroke-linejoin="round">${parts}</g><g fill="#fff">${parts}</g>`;
+  shape.innerHTML = `<g fill="currentColor" stroke="currentColor" stroke-width="10" stroke-linejoin="round">${parts}</g>`
+    + `<g fill="#fff">${parts}</g>`;
+  bubble.style.top = `calc(50% + ${SETTINGS.bubbleTop + ry - h / 2}px)`;   // 말풍선 맨 위가 중앙선 기준 bubbleTop
 }
-const again = document.getElementById("again");
-const wait = ms => new Promise(r => setTimeout(r, ms));
-const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// 받침 유무에 따라 "와/과" 자동 선택
-const josa = n => ((n.charCodeAt(n.length - 1) - 0xAC00) % 28 === 0) ? "와" : "과";
-title.textContent = `${names.a}${josa(names.a)} ${names.b}의 대화`;
-
-async function play(){
-  again.style.visibility = "hidden";
-  bubble.className = "bubble";
-  title.classList.remove("show");
-  const cs = win.querySelectorAll(".curtain");
-  cs.forEach(c => c.style.transition = "none");
-  win.classList.remove("open");
-  void win.offsetWidth;
-  cs.forEach(c => c.style.transition = "");
-
-  await wait(600);
-  title.classList.add("show");  await wait(calm ? 1500 : 3000);
-  title.classList.remove("show"); await wait(1100);
-  win.classList.add("open");    await wait(calm ? 300 : 2300);
-
-  for (const line of script){
-    bubble.className = "bubble " + line.who;
-    txt.textContent = line.text;
-    drawBubble(line.who);
-    void bubble.offsetWidth;
-    bubble.classList.add("show");
-    await wait(900 + line.text.length * 110);
-    bubble.classList.remove("show");
-    await wait(900);
+/* ===== 5. 갤러리: 본 대화만 다시 볼 수 있음 ===== */
+function buildGallery(){
+  const box = $("galList");
+  box.innerHTML = "<h2>갤러리</h2>";
+  if (!seen.length){
+    const p = document.createElement("p"); p.className = "note";
+    p.textContent = "아직 본 대화가 없어요. 먼저 시작하기를 눌러 보세요!";
+    box.appendChild(p);
   }
-  again.style.visibility = "visible";
+  talks.forEach((t, i) => {
+    const b = document.createElement("button"); b.className = "btn";
+    b.disabled = !seen.includes(i);
+    b.textContent = b.disabled ? t.title + " (아직 안 봤어요)" : t.title;
+    b.onclick = () => play(i);
+    box.appendChild(b);
+  });
+  const r = document.createElement("button"); r.className = "btn main"; r.textContent = "돌아가기";
+  r.onclick = () => { gallery.classList.remove("show"); home.classList.add("show"); };
+  box.appendChild(r);
 }
-again.onclick = play;
-play();
+
+/* ===== 6. 재생: 대화 이름 → 커튼 열림 → 말풍선 차례로 → 끝 버튼 ===== */
+const exitBtn = $("exit");
+let busy = false, lastIdx = -1, runId = 0;
+class Cancel {}
+async function play(i){
+  if (busy) return;
+  busy = true;
+  const me = ++runId;
+  const sleep = async ms => { await wait(ms); if (me !== runId) throw new Cancel(); };   // 중간에 나가면 여기서 멈춤
+  const talk = talks[i]; lastIdx = i; markSeen(i);
+  home.classList.remove("show"); gallery.classList.remove("show");
+  label.textContent = talkTitle.textContent = talk.title;
+
+  try {
+    await sleep(calm ? 300 : 900);
+    talkTitle.classList.add("show");     await sleep(calm ? 800 : 2600);
+    talkTitle.classList.remove("show");
+    await sleep(calm ? 300 : 1000);
+    win.classList.add("open");
+    exitBtn.classList.add("show");       // 커튼이 젖혀지는 동시에, 커튼 뒤에서 천천히 나타남
+    await sleep(calm ? 300 : 2300);
+    label.classList.add("show");         await sleep(calm ? 300 : 900);
+
+    for (const line of talk.lines){
+      bubble.className = "bubble " + line.who;
+      txt.textContent = line.text;
+      drawBubble(line.who);
+      void bubble.offsetWidth;
+      bubble.classList.add("show");
+      await sleep(900 + line.text.length * 110);
+      bubble.classList.remove("show");
+      await sleep(900);
+    }
+  } catch (e) {
+    if (e instanceof Cancel) return;     // 나가기 버튼으로 중단됨 (뒷정리는 그 버튼이 함)
+    busy = false; throw e;
+  }
+  exitBtn.classList.remove("show");
+  end.classList.add("show");
+  busy = false;
+}
+
+// 커튼을 닫고 나서 다음 동작을 하는 공통 순서
+async function closeCurtain(){
+  end.classList.remove("show");
+  label.classList.remove("show");
+  win.classList.remove("open");
+  await wait(calm ? 300 : 1800);
+}
+
+/* ===== 7. 버튼 ===== */
+$("startBtn").onclick = () => play(randomTalk());     // 같은 대화가 또 나와도 괜찮음
+$("galBtn").onclick = () => { buildGallery(); home.classList.remove("show"); gallery.classList.add("show"); };
+$("more").onclick = async () => {                     // 방금 본 것과 다른 대화를 랜덤으로
+  if (busy) return;
+  busy = true; await closeCurtain(); busy = false;
+  play(randomTalk(lastIdx));
+};
+$("back").onclick = async () => {
+  if (busy) return;
+  busy = true; await closeCurtain();
+  home.classList.add("show");
+  busy = false;
+};
+exitBtn.onclick = async () => {                       // 대화를 보는 도중에 처음으로
+  if (!exitBtn.classList.contains("show")) return;
+  runId++;                                            // 진행 중이던 재생을 멈춤
+  exitBtn.disabled = true;                            // 커튼이 닫히는 동안 중복 클릭 방지
+  talkTitle.classList.remove("show");
+  bubble.classList.remove("show");
+  await closeCurtain();
+  exitBtn.classList.remove("show"); exitBtn.disabled = false;   // 커튼에 가려진 뒤에 숨김
+  home.classList.add("show");
+  busy = false;
+};
 </script>
 </body>
 </html>
